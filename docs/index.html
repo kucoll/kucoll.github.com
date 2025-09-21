@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Kucoll's Document</title>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+  <meta name="description" content="Description">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
+  <link rel="icon" href="_media/favicon.ico" />
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/docsify@4/lib/themes/vue.css" title="vue">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/docsify@4/lib/themes/dark.css" title="dark" disabled />
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/docsify@4/lib/themes/buble.css" title="buble" disabled />
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/docsify@4/lib/themes/pure.css" title="pure" disabled />
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/docsify@4/lib/themes/dolphin.css" title="pure" disabled />
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/docsify-dark-mode@latest/dist/style.min.css" />
+
+  <!-- Import mermaid -->
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.css">
+  <script src="//cdn.jsdelivr.net/npm/mermaid@9.3.0/dist/mermaid.min.js"></script>
+  <style>
+    /* nav.app-nav li ul {
+      min-width: 100px;
+    }
+
+    #carbonads {
+      box-shadow: none !important;
+      width: auto !important;
+    } */
+    :root {
+      --docsifytabs-border-color: #ededed;
+      --docsifytabs-tab-highlight-color: purple;
+    }
+    #dark_mode {
+      right: 100px;
+      top: 5px
+    }
+  </style>
+</head>
+
+<body>
+  <div id="app">加载中...</div>
+
+  <script>
+    // Set html "lang" attribute based on URL
+    var lang = location.hash.match(/#\/(de-de|es|ru-ru|zh-cn)\//);
+
+    if (lang) {
+      document.documentElement.setAttribute('lang', lang[1]);
+    }
+
+    window.$docsify = {
+      // GENERAL
+      // -----------------------------------------------------------------
+      el: '#app',
+      // name与LOGO只能选其一
+      name: 'kucoll知识库',
+      nameLink: '/',
+      repo: 'docsifyjs/docsify',
+      // logo: '/_media/logo.png',
+      search: { // default 'auto'
+        depth: 3,
+        noData: 'No results!',
+        placeholder: 'Search...'
+      },
+      // themeColor: "#42b983", // this is the default 'vue' color
+      coverpage: '_coverpage.md',
+      onlyCover: false,
+      // 入口文件改为 /home.md,默认是README.md
+      homepage: 'README.md',
+      loadSidebar: '_sidebar.md',
+      loadNavbar: '_navbar.md',
+
+      // NAVIGATION
+      // -----------------------------------------------------------------
+      auto2top: true,
+      maxLevel: 3,
+      subMaxLevel: 3,
+      routerMode: 'history', // default: 'hash'
+      formatUpdated: '{MM}/{DD} {HH}:{mm}',
+      // PLUGINS
+      // -----------------------------------------------------------------
+      markdown: {
+        renderer: {
+          code: function (code, lang) {
+            if (lang === "mermaid") {
+              return (
+                '<div class="mermaid">' + mermaid.render('mermaid-svg-' + num++, code) + "</div>"
+              );
+            }
+            return this.origin.code.apply(this, arguments);
+          }
+        }
+      },
+      plugins: [
+        // plugin written for hook
+        function (hook, vm) {
+          hook.init(function () {
+            // 初始化完成后调用，只调用一次，没有参数。
+          });
+          hook.beforeEach(function (content) {
+            // 每次开始解析 Markdown 内容时调用, content为markdown文件原本内容
+            // ...
+            return content;
+          });
+          hook.afterEach(function (html, next) {
+            // 解析成 html 后调用。
+            // beforeEach 和 afterEach 支持处理异步逻辑
+            // ...
+            // 异步处理完成后调用 next(html) 返回结果
+            next(html);
+          });
+          hook.doneEach(function () {
+            // 每次路由切换时数据全部加载完成后调用，没有参数。
+            // ...
+          });
+
+          hook.mounted(function () {
+            // 初始化并第一次加载完成数据后调用，只触发一次，没有参数。
+          });
+
+          hook.ready(function () {
+            // 初始化并第一次加载完成数据后调用，没有参数。
+          });
+
+        },
+        // Append Edit File Button
+        function apppendEditFileButton(hook, vm) {
+          hook.beforeEach(function (html) {
+            // console.log('html:', html);
+            var url = 'https://github.com/docsifyjs/docsify/blob/master/docs/' + vm.route.file;
+            var editHtml = '[📝 EDIT DOCUMENT](' + url + ')\n';
+
+            return (
+              editHtml +
+              html +
+              '\n----\n' +
+              'Last modified {docsify-updated} ' +
+              editHtml
+            );
+          });
+        },
+        // Append Footer
+        function appendFooter(hook) {
+          // 就是字符串拼接出 html 语句
+          var footer = [
+            '<hr/>',
+            '<footer>',
+            '<span><a href="https://github.com/kucoll">kucoll</a> &copy;2025.</span>',
+            '<span>Powered by <a href="https://docsify.js.org" target="_blank">docsify</a>.</span>',
+            'v' + window.Docsify.version, // 能获取到当前用的版本
+            '</footer>'
+          ].join('');
+          hook.afterEach(function (html) {
+            return html + footer;
+          });
+        },
+        // Restores initial <title>
+        function persistTitle(hook, vm) {
+          var titleElm = document.querySelector('title');
+          var rootTitle = titleElm && titleElm.textContent;
+          var pageTitlePrefix = window.$docsify.name ? window.$docsify.name + ' - ' : '';
+
+          if (rootTitle) {
+            hook.doneEach(function () {
+              // currentTitle为当前侧边栏导航设置的导航标题
+              var currentTitle = titleElm.textContent;
+              var path = location.hash ? location.hash : location.pathname;
+              var isRoot = !/\/[a-z]/.test(path);
+              var newTitle = isRoot ? rootTitle : pageTitlePrefix + currentTitle;
+              titleElm.textContent = newTitle;
+            });
+          }
+        }
+      ],
+      count: {
+        countable: true,
+        fontsize: '0.9em',
+        color: 'rgb(90,90,90)',
+        language: 'chinese'
+      },
+      darkMode: {
+        dark: {
+          background: "#1c2022",
+          toggleBtnBg: "#34495e",
+          textColor: "#b4b4b4",
+
+        },
+        light: {
+          background: "white",
+          toggleBtnBg: "#42b983",
+          textColor: "var(--theme-color)"
+        }
+      },
+      tabs: {
+        persist: true, // default
+        sync: true, // default
+        theme: 'classic', // default
+        tabComments: true, // default
+        tabHeadings: true // default
+      },
+      vueComponents: {
+        'button-counter': {
+          template:
+            '<button @click="count += 1">You clicked me {{ count }} times</button>',
+          data: function () {
+            return {
+              count: 0,
+            };
+          },
+        },
+      },
+      vueGlobalOptions: {
+        data: function () {
+          return {
+            count: 0,
+            message: 'Hello, World!',
+            // Fake API response
+            images: [
+              { title: 'Image 1', url: 'https://picsum.photos/150?random=1' },
+              { title: 'Image 2', url: 'https://picsum.photos/150?random=2' },
+              { title: 'Image 3', url: 'https://picsum.photos/150?random=3' },
+            ],
+          };
+        },
+        computed: {
+          timeOfDay: function () {
+            const date = new Date();
+            const hours = date.getHours();
+
+            if (hours < 12) {
+              return 'morning';
+            } else if (hours < 18) {
+              return 'afternoon';
+            } else {
+              return 'evening';
+            }
+          },
+        },
+        methods: {
+          hello: function () {
+            alert(this.message);
+          },
+        },
+      },
+      vueMounts: {
+        '#counter': {
+          data: function () {
+            return {
+              count: 0,
+            };
+          },
+        },
+      }
+    };
+    var num = 0;
+    mermaid.initialize({ startOnLoad: false });
+  </script>
+  <!-- Docsify v4 -->
+  <script src="//cdn.jsdelivr.net/npm/docsify@4/lib/docsify.min.js"></script>
+  <script src="//unpkg.com/docsify-count/dist/countable.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/docsify@4/lib/plugins/search.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/prismjs@1/components/prism-bash.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/prismjs@1/components/prism-markdown.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/prismjs@1/components/prism-nginx.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/prismjs@1/components/prism-php.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/prismjs@1/components/prism-java.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/prismjs@1/components/prism-python.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/docsify-dark-mode@latest/dist/index.min.js"></script>
+  <!-- docsify-tabs (latest v1.x.x) -->
+  <script src="//cdn.jsdelivr.net/npm/docsify-tabs@1"></script>
+
+  <!-- Vue: Development -->
+  <!-- <script src="//cdn.jsdelivr.net/npm/vue@2/dist/vue.min.js"></script> -->
+
+  <!-- <script src="//cdn.jsdelivr.net/npm/vue@3/dist/vue.global.js"></script> -->
+  <!-- <script src="//cdn.jsdelivr.net/npm/vue@3/dist/vue.runtime.global.js"></script> -->
+
+  <!-- Vue: Production -->
+  <script src="//cdn.jsdelivr.net/npm/vue@3/dist/vue.global.prod.js"></script>
+  <!-- <script src="//cdn.jsdelivr.net/npm/vue@3/dist/vue.runtime.global.prod.js"></script> -->
+</body>
+
+</html>
